@@ -16,27 +16,27 @@ async function lookup(number) {
 
 async function createService() {
 
-    return await client.verify.services.create({ friendlyName: 'My First Verify Service' })
-        .then(service => serviceID = service.sid)
+    return await client.verify.services.create({ friendlyName: 'Mobile Bill Payment' })
         .catch(err => console.log(err.message))
 
 }
 
-async function sendCode(number) {
+async function sendCode(payload) {
 
+  
     return await
-        client.verify.services(serviceID)
+        client.verify.services(payload.sid)
             .verifications
-            .create({ to: number, channel: 'sms' })
+            .create({ to: payload.loginNumber, channel: 'sms' })
             .catch(err => console.log(err.message))
 
 }
 
-async function verifyCode(data) {
+async function verifyCode(payload) {
 
-    return await client.verify.services(serviceID)
+    return await client.verify.services(payload.sid)
         .verificationChecks
-        .create({ to: data.number, code: data.code })
+        .create({ to: payload.number, code: payload.code })
         .catch(err => console.log(err.message))
 
 }

@@ -5,6 +5,7 @@ const app = express()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const uuid = require('uuid')
 const bodyParser = require('body-parser')
+const store = require('store')
 const {
     lookup,
     createService,
@@ -21,14 +22,16 @@ app.get('/', function (req, res) {
 })
 
 app.post('/payment', (req, res) => {
+
     const { product, token } = req.body;
     const idempotencyKey = uuid.v4()
+
     return stripe.customers.create({
         email: token.email,
         source: token.id
     }).then((customer) => {
         stripe.charges.create({
-            amount: product.price * 100,
+            amount: product.price,
             currency: 'cad',
             customer: customer.id,
             receipt_email: token.email,
@@ -42,32 +45,47 @@ app.post('/payment', (req, res) => {
 app.post('/login', async (req, res) => {
 
     let loginNumber = req.body.number;
-    let phoneNumber = lookup(loginNumber).then(response => response ? response.phone_number : null);
-    
-    if (phoneNumber) {
-        return  sendCode(loginNumber)
-        .then(result => {
-            result ? res.status(200).json(result.status) :  res.status(400).send('Invalid number')
-        })
-        .catch(err => console.log(err.message));
-     
-       
-    }
+
+    return lookup(loginNumber)
+        .then(response => {
+            return createService();
+        }).then(service => {
+            store.set('sessionID', { sid: service.sid });
+            let payload = { loginNumber, sid: store.get('sessionID').sid }
+            return sendCode(payload)
+        }).then(result => {
+            result ? res.status(200).json( {"message" : result.status}) : res.status(400).json({ "message" : result.status})
+        }).catch(err => {
+            res.status(400).json({ "message": err.message })
+            console.log(err.message)
+        });
 
 
 })
 
 app.post('/verify', async (req, res) => {
 
-    let data = req.body
-   return await verifyCode(data) 
-    .then(result => res.status(200).json(result.status))
-    .catch(err => console.log(err));
+    try {
+        let { number, code } = req.body;
+        let payload = { number, code, sid: store.get('sessionID').sid }
+        return verifyCode(payload)
+            .then(result => {
+                if (result) {
+                    res.status(200).json({ "valid": result.valid })
+                }
+                else
+                    res.status(400).json({ "message": "Resource not found" })
+            })
+    } catch (err) {
+        res.status(400).json({ "message": err.message })
+        console.log(err.message)
+    }
+
 
 })
 
 app.listen(8000, () => {
 
-   createService();
+
 
 })
