@@ -84,7 +84,7 @@ app.post('/verify', async (req, res) => {
 
 })
 
-app.listen(8000, () => {
+app.listen(process.env.PORT ||8000, () => {
 
 
 
