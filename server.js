@@ -18,7 +18,7 @@ app.use(cors())
 
 
 app.get('/', function (req, res) {
-    res.status(500).json({ "message" : "Server up" });
+    res.status(200).json({ "message" : "Server up" });
 })
 
 app.post('/payment', (req, res) => {
