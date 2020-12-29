@@ -18,7 +18,7 @@ app.use(cors())
 
 
 app.get('/', function (req, res) {
-    res.status(200).json({ "message" : "Server up" });
+    res.status(200).json({ "message": "Server up" });
 })
 
 app.post('/payment', (req, res) => {
@@ -35,7 +35,7 @@ app.post('/payment', (req, res) => {
             currency: 'cad',
             customer: customer.id,
             receipt_email: token.email,
-            description: `Purchased: product.name`
+            description: product.name
         }, { idempotencyKey })
     }).then(result => res.status(200).json(result))
         .catch(err => console.log(err))
@@ -54,7 +54,7 @@ app.post('/login', async (req, res) => {
             let payload = { loginNumber, sid: store.get('sessionID').sid }
             return sendCode(payload)
         }).then(result => {
-            result ? res.status(200).json( {"message" : result.status}) : res.status(400).json({ "message" : result.status})
+            result ? res.status(200).json({ "message": result.status }) : res.status(400).json({ "message": result.status })
         }).catch(err => {
             res.status(400).json({ "message": err.message })
             console.log(err.message)
@@ -84,7 +84,7 @@ app.post('/verify', async (req, res) => {
 
 })
 
-app.listen(process.env.PORT ||8000, () => {
+app.listen(process.env.PORT || 8000, () => {
 
 
 
