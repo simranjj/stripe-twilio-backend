@@ -13,7 +13,7 @@ async function lookup(number) {
 
 async function createService() {
 
-    return await client.verify.services.create({ friendlyName: 'Mobile Bill Payment' })
+    return await client.verify.services.create({ friendlyName: 'Login' })
         .catch(err => console.log(err.message))
 
 }
